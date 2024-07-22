@@ -1,9 +1,35 @@
 const canvas = document.getElementById("test_canvas");
 const ctx = canvas.getContext("2d");
-const circleSize = 20;
-const assetSize = 15;
-const file = new Image(128,64);
-file.src = "./snake.png"
+const params = new URLSearchParams(window.location.search);
+
+console.log(params);
+
+const minSize = 10;
+const maxSize = 100;
+let circleSize = 50;
+
+if (params.has('size')) {
+	let newSize = Number(params.get('size'));
+
+	if (newSize != Number.NaN) {
+		circleSize = Math.min(maxSize, Math.max(minSize, newSize));
+	}
+}
+
+const minNbr = 1;
+const maxNbr = 10;
+let nbrCircle = 5;
+
+if (params.has('nbr')) {
+	let newNbr = Number(params.get('nbr'));
+	console.log(newNbr);
+	if (newNbr != Number.NaN) {
+		nbrCircle = Math.min(maxNbr, Math.max(minNbr, newNbr));
+	}
+}
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
 canvas.addEventListener('click', function(event) {
 	const rect = canvas.getBoundingClientRect();
@@ -20,56 +46,41 @@ canvas.addEventListener('click', function(event) {
     });
 });
 
-function Circle(x, y, dx, dy, color) {
-	this.x = x;
-	this.y = y;
-	this.dx = dx;
-	this.dy = dy;
-	this.color = color;
-}
-
-Circle.prototype.draw = function() {
-	ctx.beginPath();
-    ctx.arc(this.x, this.y, circleSize, 0, Math.PI * 2, false);
-    ctx.fillStyle = this.color;
-    ctx.fill();
-    ctx.closePath();
-}
-
-Circle.prototype.nextStep = function () {
-	this.oldx = this.x;
-	this.oldy = this.y;
-	this.x += this.dx;
-	this.y += this.dy;
-
-	if (this.x + assetSize > canvas.width || this.x - assetSize < 0) {
-		this.dx = -this.dx;
-	}
-
-	if (this.y + assetSize > canvas.height || this.y - assetSize < 0) {
-		this.dy = -this.dy;
-	}
-}
-
-Circle.prototype.isClicked = function(x, y) {
-	return Math.hypot(this.x - x, this.y - y) < circleSize;
-}
-
-Circle.prototype.click = function() {
-	console.log("here");
-	this.color = 'lime';
-}
-
 let circles = []
+const colors = ['red', 'blue', 'green', 'yellow', 'lime', 'black', 'grey', 'cyan'];
 
-for (let i = 0 ; i < 5 ; i++) {
-	circles[circles.length] = new Circle(
+while (circles.length < nbrCircle) {
+	let tmp = new Circle(
 			canvas.width / 2,
 			canvas.height / 2,
+			circleSize,
 			Math.random() * 2 * (Math.random() < 0.5 ? -1 : 1),
 			Math.random() * 2 * (Math.random() < 0.5 ? -1 : 1),			
-			'blue'
+			colors[Math.floor(Math.random() * colors.length)]
 		)
+
+	tmp.nextStep = function() {
+		this.x += this.vx;
+		this.y += this.vy;
+
+		if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
+			this.vx = -this.vx;
+		}
+
+		if (this.y + this.radius > canvas.height || this.y - this.radius < 0) {
+			this.vy = -this.vy;
+		}
+	}
+
+	tmp.click = function() {
+		let newcolor = colors[Math.floor(Math.random() * colors.length)];
+		while(this.color == newcolor) {
+			newcolor = colors[Math.floor(Math.random() * colors.length)];
+		}
+		this.color = newcolor;
+	}
+
+	circles[circles.length] = tmp;
 }
 
 function draw() {
@@ -78,7 +89,7 @@ function draw() {
 
     // Draw a circle
     circles.forEach(c => {
-    	c.draw();
+    	c.draw(ctx);
     	c.nextStep();
     });
 }
