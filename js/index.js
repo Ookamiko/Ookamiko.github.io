@@ -44,9 +44,6 @@ canvas.addEventListener('click', function(event) {
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
 
-    console.log(event);
-    console.log(rect);
-
     circles.forEach(c => {
     	if(c.isClicked(mouseX, mouseY)) {
     		c.click();
