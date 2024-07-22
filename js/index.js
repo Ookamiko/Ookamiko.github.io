@@ -28,8 +28,16 @@ if (params.has('nbr')) {
 	}
 }
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+function resize() {
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+	circles.forEach(c => {
+		c.x = canvas.width / 2;
+		c.y = canvas.height / 2;
+	})
+}
+
+window.addEventListener('resize', resize);
 
 canvas.addEventListener('click', function(event) {
 	const rect = canvas.getBoundingClientRect();
@@ -99,4 +107,5 @@ function animate() {
 	draw();
 }
 
+resize();
 animate();
